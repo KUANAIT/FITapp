@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Membership Plans - SSE Fitness</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+    }
+    .plan-card {
+      border-radius: 1.5rem;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+      backdrop-filter: blur(2px);
+      border: 1px solid rgba(255,255,255,0.18);
+      transition: transform 0.3s ease;
+    }
+    .plan-card:hover {
+      transform: translateY(-5px);
+    }
+    .plan-header {
+      border-radius: 1.5rem 1.5rem 0 0;
+    }
+    .plan-basic .plan-header {
+      background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+    }
+    .plan-premium .plan-header {
+      background: linear-gradient(90deg, #007bff 0%, #6610f2 100%);
+    }
+    .plan-vip .plan-header {
+      background: linear-gradient(90deg, #fd7e14 0%, #dc3545 100%);
+    }
+    .price {
+      font-size: 2.5rem;
+      font-weight: bold;
+    }
+    .btn-select {
+      font-weight: 600;
+      letter-spacing: 1px;
+      border-radius: 2rem;
+      transition: background 0.2s;
+    }
+    .feature-list {
+      list-style: none;
+      padding: 0;
+    }
+    .feature-list li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    .feature-list li:last-child {
+      border-bottom: none;
+    }
+    .popular-badge {
+      position: absolute;
+      top: -10px;
+      right: 20px;
+      background: #ff6b6b;
+      color: white;
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="/"><i class="bi bi-heart-pulse"></i> Fitness Center</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/profile">Profile</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="/membership">Membership</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-5" data-user-id="{{.UserID}}">
+    <div class="text-center mb-5">
+      <h1 class="display-4 fw-bold text-dark">Choose Your Membership Plan</h1>
+      <p class="lead text-muted">Select the perfect plan for your fitness journey</p>
+    </div>
+
+    <div class="row g-4" id="membership-plans">
+    </div>
+  </div>
+
+  <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="successModalLabel">Success!</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="successModalBody">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" onclick="window.location.href='/profile'">Go to Profile</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="errorModalLabel">Error</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="errorModalBody">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    async function loadPlans() {
+      try {
+        const response = await fetch('/membership/plans');
+        const plans = await response.json();
+        
+        const container = document.getElementById('membership-plans');
+        container.innerHTML = '';
+        
+        plans.forEach((plan, index) => {
+          const planClass = plan.name.toLowerCase();
+          const isPopular = plan.name === 'Premium';
+          
+          const planHTML = `
+            <div class="col-lg-4 col-md-6">
+              <div class="card plan-card plan-${planClass} h-100 ${isPopular ? 'position-relative' : ''}">
+                ${isPopular ? '<div class="popular-badge">Most Popular</div>' : ''}
+                <div class="card-header plan-header text-white text-center py-4">
+                  <h3 class="mb-0">${plan.name}</h3>
+                  <div class="price">${plan.price.toLocaleString()} ₸</div>
+                  <small>/month</small>
+                </div>
+                <div class="card-body p-4">
+                  <p class="text-muted mb-4">${plan.description}</p>
+                  <ul class="feature-list">
+                    ${plan.features.map(feature => `
+                      <li><i class="bi bi-check-circle text-success me-2"></i>${feature}</li>
+                    `).join('')}
+                  </ul>
+                </div>
+                <div class="card-footer bg-white border-0 text-center pb-4">
+                  <button class="btn btn-select ${isPopular ? 'btn-primary' : 'btn-outline-primary'} w-100" 
+                          onclick="selectPlan('${plan.id || plan._id}', '${plan.name}')">
+                    Choose ${plan.name}
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+          container.innerHTML += planHTML;
+        });
+      } catch (error) {
+        console.error('Error loading plans:', error);
+        showError('Failed to load membership plans');
+      }
+    }
+
+    async function selectPlan(planId, planName) {
+      try {
+        const userIdElement = document.querySelector('[data-user-id]');
+        const userId = userIdElement ? userIdElement.dataset.userId : null;
+        
+        if (!userId) {
+          showError('Please log in to select a membership plan');
+          return;
+        }
+
+        const response = await fetch('/membership/select', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            membership_plan_id: planId
+          })
+        });
+
+        const result = await response.json();
+        
+        if (response.ok) {
+          showSuccess(`Successfully selected ${planName} membership plan!`);
+        } else {
+          showError(result.message || 'Failed to select membership plan');
+        }
+      } catch (error) {
+        console.error('Error selecting plan:', error);
+        showError('Network error, please try again');
+      }
+    }
+
+    function showSuccess(message) {
+      document.getElementById('successModalBody').textContent = message;
+      const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+      successModal.show();
+    }
+
+    function showError(message) {
+      document.getElementById('errorModalBody').textContent = message;
+      const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+      errorModal.show();
+    }
+
+    async function updatePlans() {
+      try {
+        const response = await fetch('/membership/update-plans', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        const result = await response.json();
+        if (response.ok) {
+          showSuccess('Plans updated to Tenge prices! Reloading...');
+          setTimeout(() => {
+            location.reload();
+          }, 2000);
+        } else {
+          showError(result.message || 'Failed to update plans');
+        }
+      } catch (error) {
+        console.error('Error updating plans:', error);
+        showError('Network error, please try again');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadPlans);
+  </script>
+</body>
+</html>

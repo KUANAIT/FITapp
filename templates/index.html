@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSE</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f8ffae 0%, #43cea2 100%);
+            display: flex;
+            flex-direction: column;
+        }
+        main {
+            flex: 1;
+        }
+        .welcome-card {
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255,255,255,0.18);
+            background: #fff;
+        }
+        .welcome-header {
+            background: linear-gradient(90deg, #43cea2 0%, #185a9d 100%);
+            border-radius: 1.5rem 1.5rem 0 0;
+            box-shadow: 0 4px 16px 0 rgba(25,135,84,0.10);
+        }
+        .welcome-icon {
+            font-size: 2.5rem;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+        .lead {
+            font-size: 1.25rem;
+        }
+        .btn-success {
+            font-weight: 600;
+            letter-spacing: 1px;
+            border-radius: 2rem;
+            transition: background 0.2s;
+        }
+        .btn-success:hover {
+            background: #157347;
+        }
+        .floating-nav {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            border-radius: 2rem;
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 16px 0 rgba(31, 38, 135, 0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .btn-outline-success {
+            border-radius: 2rem;
+        }
+    </style>
+</head>
+<body>
+{{if .Authenticated}}
+<div class="floating-nav p-3">
+    <div class="dropdown">
+        <button class="btn btn-success dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-person-circle"></i> {{.UserName}}
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="/profile"><i class="bi bi-person"></i> Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <form action="/logout" method="POST" class="dropdown-item">
+                    <button type="submit" class="btn btn-link p-0 text-start w-100 text-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+</div>
+{{else}}
+<div class="floating-nav p-2">
+    <a href="/register" class="btn btn-success btn-sm me-1"><i class="bi bi-person-plus"></i></a>
+    <a href="/login" class="btn btn-outline-success btn-sm"><i class="bi bi-box-arrow-in-right"></i></a>
+</div>
+{{end}}
+
+<main class="container my-5 d-flex flex-column align-items-center justify-content-center min-vh-100">
+    <div class="col-lg-8">
+        <div class="card welcome-card">
+            <div class="card-header welcome-header text-white text-center py-4">
+                <div class="welcome-icon mb-2"><i class="bi bi-house-door"></i></div>
+                <h2 class="mb-0">Welcome to Fitness Center</h2>
+            </div>
+            <div class="card-body p-5 text-center">
+                <h3 class="fw-bold mb-3">Fitness Center <span class="badge bg-success">DEMO</span></h3>
+                <p class="lead mb-4">
+                    Welcome to our modern fitness center membership platform.<br>
+                    Join today and start your fitness journey with our professional facilities and expert trainers.
+                </p>
+                {{if .Authenticated}}
+                <a href="/profile" class="btn btn-success px-4 py-2"><i class="bi bi-person-circle"></i> Go to Profile</a>
+                <a href="/fitness-chat" class="btn btn-outline-primary px-4 py-2 ms-2"><i class="bi bi-chat-dots"></i> Fitness AI Chat</a>
+                {{else}}
+                <a href="/register" class="btn btn-success px-4 py-2 me-2"><i class="bi bi-person-plus"></i> Register</a>
+                <a href="/login" class="btn btn-outline-success px-4 py-2 me-2"><i class="bi bi-box-arrow-in-right"></i> Login</a>
+                {{end}}
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="bg-dark text-white text-center py-3">
+    <p>&copy; 2025 Fitness Center. All Rights Reserved.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+</html>
