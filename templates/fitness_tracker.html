@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fitness Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f8ffae 0%, #43cea2 100%);
+            min-height: 100vh;
+        }
+        .fitness-card {
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            backdrop-filter: blur(2px);
+            border: 1px solid rgba(255,255,255,0.18);
+            margin-bottom: 2rem;
+        }
+        .metric-card {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            color: white;
+            margin-bottom: 1rem;
+        }
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .activity-item {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .recommendation-card {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .btn-custom {
+            border-radius: 2rem;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+        }
+        .form-control, .form-select {
+            border-radius: 0.75rem;
+            border: 2px solid #e9ecef;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+    </style>
+</head>
+<body>
+<main class="container py-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card fitness-card">
+                <div class="card-header bg-success text-white text-center">
+                    <h2 class="mb-0"><i class="bi bi-heart-pulse"></i> Fitness Tracker - {{.UserName}}</h2>
+                </div>
+                <div class="card-body">
+                    <!-- Profile Setup/Update Section -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h4><i class="bi bi-person-circle"></i> Fitness Profile</h4>
+                            <form id="profile-form">
+                                <div class="row">
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Age</label>
+                                        <input type="number" class="form-control" id="age" min="1" max="120" {{if .HasProfile}}value="{{.Profile.Age}}"{{end}} required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Gender</label>
+                                        <select class="form-select" id="gender" required>
+                                            <option value="">Select Gender</option>
+                                            <option value="male" {{if and .HasProfile (eq .Profile.Gender "male")}}selected{{end}}>Male</option>
+                                            <option value="female" {{if and .HasProfile (eq .Profile.Gender "female")}}selected{{end}}>Female</option>
+                                            <option value="other" {{if and .HasProfile (eq .Profile.Gender "other")}}selected{{end}}>Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Height (cm)</label>
+                                        <input type="number" class="form-control" id="height" min="50" max="300" step="0.1" {{if .HasProfile}}value="{{.Profile.Height}}"{{end}} required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label class="form-label">Weight (kg)</label>
+                                        <input type="number" class="form-control" id="weight" min="20" max="500" step="0.1" {{if .HasProfile}}value="{{.Profile.Weight}}"{{end}} required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Activity Level</label>
+                                        <select class="form-select" id="activity-level" required>
+                                            <option value="">Select Activity Level</option>
+                                            <option value="sedentary" {{if and .HasProfile (eq .Profile.ActivityLevel "sedentary")}}selected{{end}}>Sedentary (little/no exercise)</option>
+                                            <option value="light" {{if and .HasProfile (eq .Profile.ActivityLevel "light")}}selected{{end}}>Light (light exercise 1-3 days/week)</option>
+                                            <option value="moderate" {{if and .HasProfile (eq .Profile.ActivityLevel "moderate")}}selected{{end}}>Moderate (moderate exercise 3-5 days/week)</option>
+                                            <option value="active" {{if and .HasProfile (eq .Profile.ActivityLevel "active")}}selected{{end}}>Active (heavy exercise 6-7 days/week)</option>
+                                            <option value="very_active" {{if and .HasProfile (eq .Profile.ActivityLevel "very_active")}}selected{{end}}>Very Active (very heavy exercise, physical job)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Fitness Goal</label>
+                                        <select class="form-select" id="goal" required>
+                                            <option value="">Select Goal</option>
+                                            <option value="lose_weight" {{if and .HasProfile (eq .Profile.Goal "lose_weight")}}selected{{end}}>Lose Weight</option>
+                                            <option value="gain_weight" {{if and .HasProfile (eq .Profile.Goal "gain_weight")}}selected{{end}}>Gain Weight</option>
+                                            <option value="maintain" {{if and .HasProfile (eq .Profile.Goal "maintain")}}selected{{end}}>Maintain Weight</option>
+                                            <option value="build_muscle" {{if and .HasProfile (eq .Profile.Goal "build_muscle")}}selected{{end}}>Build Muscle</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-success btn-custom">
+                                    <i class="bi bi-save"></i> Save Profile
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    {{if .HasProfile}}
+                    <!-- Metrics Display -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="metric-card">
+                                <div class="metric-value">{{printf "%.1f" .Profile.BMI}}</div>
+                                <div class="metric-label">BMI</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="metric-card">
+                                <div class="metric-value">{{printf "%.0f" .Profile.BMR}}</div>
+                                <div class="metric-label">BMR (calories)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="metric-card">
+                                <div class="metric-value">{{printf "%.0f" .Profile.TDEE}}</div>
+                                <div class="metric-label">TDEE (calories)</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="metric-card">
+                                <div class="metric-value">{{.Profile.TargetCalories}}</div>
+                                <div class="metric-label">Target Calories</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Recommendations -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h4><i class="bi bi-robot"></i> AI Fitness Recommendations</h4>
+                            <div class="recommendation-card">
+                                <div class="mb-3">
+                                    <label class="form-label">What would you like recommendations for?</label>
+                                    <select class="form-select" id="recommendation-type">
+                                        <option value="workout">Workout Plan</option>
+                                        <option value="nutrition">Nutrition Advice</option>
+                                        <option value="general">General Fitness Tips</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Specific Question (Optional)</label>
+                                    <textarea class="form-control" id="specific-question" rows="2" placeholder="Ask a specific question..."></textarea>
+                                </div>
+                                <button class="btn btn-success btn-custom" onclick="getRecommendations()">
+                                    <i class="bi bi-magic"></i> Get AI Recommendations
+                                </button>
+                            </div>
+                            <div id="recommendations-result" class="recommendation-card" style="display: none;">
+                                <h5><i class="bi bi-lightbulb"></i> Personalized Recommendations</h5>
+                                <div id="recommendations-content"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activity Tracking -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h4><i class="bi bi-activity"></i> Add Activity</h4>
+                            <form id="activity-form">
+                                <div class="mb-3">
+                                    <label class="form-label">Activity Name</label>
+                                    <input type="text" class="form-control" id="activity-name" placeholder="e.g., Running, Weight Lifting" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Activity Type</label>
+                                    <select class="form-select" id="activity-type" required>
+                                        <option value="">Select Type</option>
+                                        <option value="cardio">Cardio</option>
+                                        <option value="strength">Strength Training</option>
+                                        <option value="flexibility">Flexibility</option>
+                                        <option value="sports">Sports</option>
+                                    </select>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Duration (minutes)</label>
+                                        <input type="number" class="form-control" id="duration" min="1" max="600" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Intensity</label>
+                                        <select class="form-select" id="intensity" required>
+                                            <option value="">Select Intensity</option>
+                                            <option value="low">Low</option>
+                                            <option value="moderate">Moderate</option>
+                                            <option value="high">High</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Calories Burned</label>
+                                    <input type="number" class="form-control" id="calories-burned" min="1" max="2000" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Notes (Optional)</label>
+                                    <textarea class="form-control" id="activity-notes" rows="2" placeholder="Any additional notes..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-warning btn-custom">
+                                    <i class="bi bi-plus-circle"></i> Add Activity
+                                </button>
+                            </form>
+                        </div>
+                        <div class="col-md-6">
+                            <h4><i class="bi bi-clock-history"></i> Recent Activities</h4>
+                            <div id="activities-list">
+                                {{range .Activities}}
+                                <div class="activity-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">{{.Name}}</h6>
+                                            <small class="text-muted">{{.ActivityType}} • {{.Duration}} min • {{.Intensity}} intensity</small>
+                                            <div class="mt-1">
+                                                <span class="badge bg-success">{{.CaloriesBurned}} calories</span>
+                                                <small class="text-muted ms-2">{{.Date.Format "Jan 2, 2006"}}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {{if .Notes}}
+                                    <div class="mt-2">
+                                        <small class="text-muted">{{.Notes}}</small>
+                                    </div>
+                                    {{end}}
+                                </div>
+                                {{else}}
+                                <div class="text-center text-muted py-4">
+                                    <i class="bi bi-activity" style="font-size: 3rem;"></i>
+                                    <p class="mt-2">No activities recorded yet</p>
+                                </div>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+                    {{end}}
+
+                    <div class="text-center mt-4">
+                        <a href="/" class="btn btn-outline-secondary btn-custom">
+                            <i class="bi bi-arrow-left"></i> Back to Home
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Save fitness profile
+document.getElementById('profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const profileData = {
+        age: parseInt(document.getElementById('age').value),
+        gender: document.getElementById('gender').value,
+        height: parseFloat(document.getElementById('height').value),
+        weight: parseFloat(document.getElementById('weight').value),
+        activity_level: document.getElementById('activity-level').value,
+        goal: document.getElementById('goal').value
+    };
+    
+    try {
+        const response = await fetch('/fitness/profile', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(profileData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        if (result.status === 'success') {
+            alert('Profile saved successfully!');
+            location.reload();
+        } else {
+            alert('Error saving profile: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Profile error:', error);
+        alert('Error saving profile: ' + error.message);
+    }
+});
+
+// Add activity
+document.getElementById('activity-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const activityData = {
+        name: document.getElementById('activity-name').value,
+        activity_type: document.getElementById('activity-type').value,
+        duration: parseInt(document.getElementById('duration').value),
+        intensity: document.getElementById('intensity').value,
+        calories_burned: parseInt(document.getElementById('calories-burned').value),
+        notes: document.getElementById('activity-notes').value
+    };
+    
+    try {
+        const response = await fetch('/fitness/activity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(activityData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        if (result.status === 'success') {
+            alert('Activity added successfully!');
+            location.reload();
+        } else {
+            alert('Error adding activity: ' + result.message);
+        }
+    } catch (error) {
+        console.error('Activity error:', error);
+        alert('Error adding activity: ' + error.message);
+    }
+});
+
+// Get AI recommendations
+async function getRecommendations() {
+    const requestType = document.getElementById('recommendation-type').value;
+    const specificQuestion = document.getElementById('specific-question').value;
+    
+    const requestData = {
+        request_type: requestType,
+        specific_question: specificQuestion
+    };
+    
+    try {
+        const response = await fetch('/fitness/recommendations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        if (result.recommendations) {
+            document.getElementById('recommendations-content').innerHTML = 
+                result.recommendations.replace(/\n/g, '<br>');
+            document.getElementById('recommendations-result').style.display = 'block';
+        } else {
+            alert('Error getting recommendations: No recommendations received');
+        }
+    } catch (error) {
+        console.error('Recommendations error:', error);
+        alert('Error getting recommendations: ' + error.message);
+    }
+}
+</script>
+</body>
+</html>
