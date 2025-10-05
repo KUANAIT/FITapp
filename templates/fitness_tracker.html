@@ -175,8 +175,8 @@
                                     <label class="form-label">Specific Question (Optional)</label>
                                     <textarea class="form-control" id="specific-question" rows="2" placeholder="Ask a specific question..."></textarea>
                                 </div>
-                                <button class="btn btn-success btn-custom" onclick="getRecommendations()">
-                                    <i class="bi bi-magic"></i> Get AI Recommendations
+                                <button class="btn btn-success btn-custom" id="get-ai-recommendations-btn" onclick="getRecommendations()">
+                                    <i class="bi bi-magic"></i> <span id="get-ai-recommendations-text">Get AI Recommendations</span>
                                 </button>
                             </div>
                             <div id="recommendations-result" class="recommendation-card" style="display: none;">
@@ -277,8 +277,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
-// Save fitness profile
 document.getElementById('profile-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -315,7 +315,6 @@ document.getElementById('profile-form').addEventListener('submit', async (e) => 
     }
 });
 
-// Add activity
 document.getElementById('activity-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -352,8 +351,11 @@ document.getElementById('activity-form').addEventListener('submit', async (e) =>
     }
 });
 
-// Get AI recommendations
 async function getRecommendations() {
+    const btn = document.getElementById('get-ai-recommendations-btn');
+    const btnText = document.getElementById('get-ai-recommendations-text');
+    btn.disabled = true;
+    btnText.textContent = 'Thinking...';
     const requestType = document.getElementById('recommendation-type').value;
     const specificQuestion = document.getElementById('specific-question').value;
     
@@ -375,17 +377,30 @@ async function getRecommendations() {
         
         const result = await response.json();
         if (result.recommendations) {
-            document.getElementById('recommendations-content').innerHTML = 
-                result.recommendations.replace(/\n/g, '<br>');
+            document.getElementById('recommendations-content').innerHTML =
+                marked.parse(result.recommendations);
             document.getElementById('recommendations-result').style.display = 'block';
+            localStorage.setItem('ai_recommendations', result.recommendations);
         } else {
             alert('Error getting recommendations: No recommendations received');
         }
     } catch (error) {
         console.error('Recommendations error:', error);
         alert('Error getting recommendations: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btnText.textContent = 'Get AI Recommendations';
     }
 }
+
+window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('ai_recommendations');
+    if (saved) {
+        document.getElementById('recommendations-content').innerHTML = marked.parse(saved);
+        document.getElementById('recommendations-result').style.display = 'block';
+    }
+});
 </script>
 </body>
 </html>
+

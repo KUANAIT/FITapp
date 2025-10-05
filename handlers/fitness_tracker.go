@@ -17,7 +17,6 @@ import (
 	"time"
 )
 
-// FitnessTrackerPageHandler displays the fitness tracking dashboard
 func FitnessTrackerPageHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FitnessTrackerPageHandler called")
 	tmpl, err := template.ParseFiles("templates/fitness_tracker.html")
@@ -43,7 +42,6 @@ func FitnessTrackerPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user info
 	userCollection, err := database.GetCollection("SSE", "users")
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -56,7 +54,6 @@ func FitnessTrackerPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get fitness profile
 	fitnessCollection, err := database.GetCollection("SSE", "fitness_profiles")
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -65,7 +62,6 @@ func FitnessTrackerPageHandler(w http.ResponseWriter, r *http.Request) {
 	var profile models.FitnessProfile
 	err = fitnessCollection.FindOne(context.TODO(), bson.M{"user_id": objID}).Decode(&profile)
 
-	// Get recent activities
 	activityCollection, err := database.GetCollection("SSE", "activities")
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -88,7 +84,7 @@ func FitnessTrackerPageHandler(w http.ResponseWriter, r *http.Request) {
 		Profile:       profile,
 		Activities:    activities,
 		HasProfile:    err == nil,
-		Authenticated: true, // Since this handler requires authentication
+		Authenticated: true,
 	}
 
 	fmt.Println("Template data - UserName:", data.UserName, "HasProfile:", data.HasProfile)
@@ -101,7 +97,6 @@ func FitnessTrackerPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// CreateFitnessProfileHandler creates or updates user's fitness profile
 func CreateFitnessProfileHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -131,7 +126,6 @@ func CreateFitnessProfileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate required fields
 	if profile.Age <= 0 || profile.Height <= 0 || profile.Weight <= 0 {
 		http.Error(w, "Age, height, and weight must be positive", http.StatusBadRequest)
 		return
@@ -149,16 +143,13 @@ func CreateFitnessProfileHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if profile already exists
 	var existingProfile models.FitnessProfile
 	err = collection.FindOne(context.TODO(), bson.M{"user_id": objID}).Decode(&existingProfile)
 	if err == nil {
-		// Update existing profile
 		profile.ID = existingProfile.ID
 		profile.CreatedAt = existingProfile.CreatedAt
 		_, err = collection.ReplaceOne(context.TODO(), bson.M{"_id": existingProfile.ID}, profile)
 	} else {
-		// Create new profile
 		_, err = collection.InsertOne(context.TODO(), profile)
 	}
 
@@ -171,7 +162,6 @@ func CreateFitnessProfileHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Fitness profile saved successfully"})
 }
 
-// AddActivityHandler adds a new activity entry
 func AddActivityHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("AddActivityHandler called")
 	if r.Method != http.MethodPost {
@@ -225,7 +215,6 @@ func AddActivityHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Activity added successfully"})
 }
 
-// GetFitnessRecommendationsHandler gets AI-powered fitness recommendations
 func GetFitnessRecommendationsHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("GetFitnessRecommendationsHandler called")
 	if r.Method != http.MethodPost {
@@ -251,7 +240,6 @@ func GetFitnessRecommendationsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get user's fitness profile
 	collection, err := database.GetCollection("SSE", "fitness_profiles")
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
@@ -260,7 +248,6 @@ func GetFitnessRecommendationsHandler(w http.ResponseWriter, r *http.Request) {
 	var profile models.FitnessProfile
 	err = collection.FindOne(context.TODO(), bson.M{"user_id": objID}).Decode(&profile)
 	if err != nil {
-		// If no profile exists, return a general recommendation
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{
 			"recommendations": "Please create your fitness profile first to get personalized recommendations. Go to the profile section above and fill in your age, gender, height, weight, activity level, and fitness goals.",
@@ -269,7 +256,7 @@ func GetFitnessRecommendationsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req struct {
-		RequestType      string `json:"request_type"` // "workout", "nutrition", "general"
+		RequestType      string `json:"request_type"`
 		SpecificQuestion string `json:"specific_question,omitempty"`
 	}
 	err = json.NewDecoder(r.Body).Decode(&req)
@@ -291,14 +278,12 @@ func GetFitnessRecommendationsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"recommendations": recommendations})
 }
 
-// GetGeminiFitnessRecommendations gets personalized fitness recommendations from Gemini AI
 func GetGeminiFitnessRecommendations(profile models.FitnessProfile, requestType, specificQuestion string) (string, error) {
 	fmt.Println("GetGeminiFitnessRecommendations started")
 	apiKey := "AIzaSyCdIzPAdPKzHc9-g8h4l9RKZg_xP5sMQDI"
 	url := "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=" + apiKey
 	fmt.Println("API URL:", url)
 
-	// Create personalized prompt based on user's profile
 	prompt := fmt.Sprintf(`You are a professional fitness trainer and nutritionist. Based on the following user profile, provide personalized recommendations:
 
 User Profile:
@@ -401,7 +386,6 @@ Request Type: %s
 	return result.Candidates[0].Content.Parts[0].Text, nil
 }
 
-// TestFitnessHandler - Simple test handler
 func TestFitnessHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles("templates/test_fitness.html")
 	if err != nil {
