@@ -18,11 +18,11 @@
             margin-bottom: 2rem;
         }
         .metric-card {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            background: linear-gradient(135deg, #f8ffae 0%, #43cea2 100%);
             border-radius: 1rem;
             padding: 1.5rem;
             text-align: center;
-            color: white;
+            color: dimgray;
             margin-bottom: 1rem;
         }
         .metric-value {
@@ -71,7 +71,6 @@
                     <h2 class="mb-0"><i class="bi bi-heart-pulse"></i> Fitness Tracker - {{.UserName}}</h2>
                 </div>
                 <div class="card-body">
-                    <!-- Profile Setup/Update Section -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <h4><i class="bi bi-person-circle"></i> Fitness Profile</h4>
@@ -130,7 +129,6 @@
                     </div>
 
                     {{if .HasProfile}}
-                    <!-- Metrics Display -->
                     <div class="row mb-4">
                         <div class="col-md-3">
                             <div class="metric-card">
