@@ -442,6 +442,34 @@ func GetAIFitnessRecommendations(profile models.FitnessProfile, requestType, spe
 		result.WriteString(fmt.Sprintf("**Notes:** %s\n", apiResp.Notes))
 	}
 
+	if profile.Location != "" {
+		result.WriteString("\n#### Recommended Fitness Spots in ")
+		result.WriteString(profile.Location + " " + "district")
+		result.WriteString("\n")
+		switch profile.Location {
+		case "Almaty":
+			result.WriteString("- [Zheruiyk Park](https://maps.app.goo.gl/u7jXA2QsDuYJZ8159)\n")
+			result.WriteString("- [Park named after B. Momyshuly](https://maps.app.goo.gl/7ywzBg8QMSm5gLm28)\n")
+			result.WriteString("- [Triathlon Park](https://maps.app.goo.gl/qaiKPwsi9pDLk8Du8)\n")
+		case "Baikonur":
+			result.WriteString("- [Atyrau Bridge / Embankment Area](https://maps.app.goo.gl/Bm6S1RuvuWsUHWzm9)\n")
+		case "Esil":
+			result.WriteString("- [Botanical Garden](https://maps.app.goo.gl/S9giRJKWfHVLJxaz9)\n")
+			result.WriteString("- [Expo Park](https://maps.app.goo.gl/YWq5SCAEQtivUvf19)\n")
+			result.WriteString("- [Linear Park](https://maps.app.goo.gl/vuSPejUBT8E4yiJr7)\n")
+			result.WriteString("- [Lovers' Park](https://maps.app.goo.gl/KDKH5vH6nDuA5hPr7)\n")
+		case "Nura":
+			result.WriteString("- [Turan Ave.](https://maps.app.goo.gl/1z8fPZaw2i4sVvmf6)\n")
+			result.WriteString("- [Central Park](https://maps.app.goo.gl/x1GR7mPatBcNvpLA9)\n")
+		case "Saryarka":
+			result.WriteString("- [Korgalzhyn Park](https://go.2gis.com/VpJFc)\n")
+			result.WriteString("- [Koktal Park](https://maps.app.goo.gl/BzXxPNA8HnQBZpWf7)\n")
+		case "Sarayshyq":
+			result.WriteString("- [President's Park](https://maps.app.goo.gl/BT2u9wQwyskF28T7A)\n")
+		default:
+			result.WriteString("Stay At Home\n")
+		}
+	}
 	return result.String(), nil
 }
 

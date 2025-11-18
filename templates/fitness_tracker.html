@@ -128,7 +128,15 @@
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">Location (District)</label>
-                                        <input type="text" class="form-control" id="location" placeholder="e.g., Esil, Saryarka" {{if .HasProfile}}value="{{.Profile.Location}}"{{end}}>
+                                        <select class="form-select" id="location" required>
+                                            <option value="">Select District</option>
+                                            <option value="Almaty" {{if and .HasProfile (eq .Profile.Location "Almaty")}}selected{{end}}>Almaty</option>
+                                            <option value="Baikonur" {{if and .HasProfile (eq .Profile.Location "Baikonur")}}selected{{end}}>Baikonur</option>
+                                            <option value="Esil" {{if and .HasProfile (eq .Profile.Location "Esil")}}selected{{end}}>Esil</option>
+                                            <option value="Nura" {{if and .HasProfile (eq .Profile.Location "Nura")}}selected{{end}}>Nura</option>
+                                            <option value="Saryarka" {{if and .HasProfile (eq .Profile.Location "Saryarka")}}selected{{end}}>Saryarka</option>
+                                            <option value="Sarayshyq" {{if and .HasProfile (eq .Profile.Location "Sarayshyq")}}selected{{end}}>Sarayshyq</option>
+                                        </select>
                                     </div>
                                     <div class="col-md-4 mb-3">
                                         <label class="form-label">Health Conditions</label>
@@ -170,7 +178,6 @@
                         </div>
                     </div>
 
-                    <!-- AI Recommendations -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <h4><i class="bi bi-robot"></i> AI Fitness Recommendations</h4>
