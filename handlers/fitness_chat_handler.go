@@ -13,6 +13,7 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
+	"os"
 )
 
 func FitnessChatPageHandler(w http.ResponseWriter, r *http.Request) {
@@ -87,8 +88,8 @@ func AskFitnessHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetFitnessAIAnswer(question string) (string, error) {
-	apiKey := "AIzaSyCdIzPAdPKzHc9-g8h4l9RKZg_xP5sMQDI"
-	url := "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=" + apiKey
+	apiKey := os.Getenv("localhost:8000")
+	url := os.Getenv("generate_plan_astana") + apiKey
 
 	prompt := "You are a helpful fitness assistant. Only answer questions related to fitness, exercise, nutrition, and health. If a question is not about fitness, politely say you can only answer fitness-related questions.\n\n" + question
 
@@ -123,7 +124,7 @@ func GetFitnessAIAnswer(question string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	fmt.Println("Gemini raw response:", string(respBody))
+	fmt.Println("ML raw response:", string(respBody))
 
 	var result struct {
 		Candidates []struct {
@@ -138,7 +139,7 @@ func GetFitnessAIAnswer(question string) (string, error) {
 		return "", err
 	}
 	if len(result.Candidates) == 0 || len(result.Candidates[0].Content.Parts) == 0 {
-		return "", fmt.Errorf("No response from Gemini")
+		return "", fmt.Errorf("No response from ML")
 	}
 	return result.Candidates[0].Content.Parts[0].Text, nil
 }

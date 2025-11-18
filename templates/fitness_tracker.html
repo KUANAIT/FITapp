@@ -121,6 +121,20 @@
                                         </select>
                                     </div>
                                 </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Gym Budget (KZT per month)</label>
+                                        <input type="text" class="form-control" id="budget_kzt" placeholder="e.g., 0-8,000 or 10,000" {{if .HasProfile}}value="{{.Profile.BudgetKzt}}"{{end}}>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Location (District)</label>
+                                        <input type="text" class="form-control" id="location" placeholder="e.g., Esil, Saryarka" {{if .HasProfile}}value="{{.Profile.Location}}"{{end}}>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label">Health Conditions</label>
+                                        <input type="text" class="form-control" id="health_conditions" placeholder="e.g., Asthma, knee pain" {{if .HasProfile}}value="{{.Profile.HealthConditions}}"{{end}}>
+                                    </div>
+                                </div>
                                 <button type="submit" class="btn btn-success btn-custom">
                                     <i class="bi bi-save"></i> Save Profile
                                 </button>
@@ -286,7 +300,10 @@ document.getElementById('profile-form').addEventListener('submit', async (e) => 
         height: parseFloat(document.getElementById('height').value),
         weight: parseFloat(document.getElementById('weight').value),
         activity_level: document.getElementById('activity-level').value,
-        goal: document.getElementById('goal').value
+        goal: document.getElementById('goal').value,
+        budget_kzt: document.getElementById('budget_kzt').value,
+        location: document.getElementById('location').value,
+        health_conditions: document.getElementById('health_conditions').value
     };
     
     try {

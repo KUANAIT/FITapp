@@ -265,10 +265,10 @@ func GetFitnessRecommendationsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("Calling GetGeminiFitnessRecommendations...")
-	recommendations, err := GetGeminiFitnessRecommendations(profile, req.RequestType, req.SpecificQuestion)
+	fmt.Println("Calling fitness recommendation AI API...")
+	recommendations, err := GetAIFitnessRecommendations(profile, req.RequestType, req.SpecificQuestion)
 	if err != nil {
-		fmt.Println("Gemini API error:", err)
+		fmt.Println("AI API error:", err)
 		http.Error(w, "Failed to get recommendations", http.StatusInternalServerError)
 		return
 	}
@@ -278,112 +278,188 @@ func GetFitnessRecommendationsHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"recommendations": recommendations})
 }
 
-func GetGeminiFitnessRecommendations(profile models.FitnessProfile, requestType, specificQuestion string) (string, error) {
-	fmt.Println("GetGeminiFitnessRecommendations started")
-	apiKey := "AIzaSyCdIzPAdPKzHc9-g8h4l9RKZg_xP5sMQDI"
-	url := "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=" + apiKey
-	fmt.Println("API URL:", url)
+func GetAIFitnessRecommendations(profile models.FitnessProfile, requestType, specificQuestion string) (string, error) {
+	fmt.Println("GetAIFitnessRecommendations started (REST version)")
 
-	prompt := fmt.Sprintf(`You are a professional fitness trainer and nutritionist. Based on the following user profile, provide personalized recommendations:
+	type PlanRequest struct {
+		Age                int      `json:"age"`
+		Sex                string   `json:"sex"`
+		HeightCM           float64  `json:"height_cm"`
+		WeightKG           float64  `json:"weight_kg"`
+		Goal               string   `json:"goal"`
+		SessionsPerWeek    int      `json:"sessions_per_week"`
+		BudgetKzt          string   `json:"budget_kzt"`
+		Location           string   `json:"location"`
+		HealthConditions   string   `json:"health_conditions"`
+		ExistingActivities []string `json:"existing_activities"`
+		ActivityLevel      int      `json:"activity_level"`
+	}
 
-User Profile:
-- Age: %d years
-- Gender: %s
-- Height: %.1f cm
-- Weight: %.1f kg
-- BMI: %.1f
-- Activity Level: %s
-- Goal: %s
-- Target Calories: %d per day
-- BMR: %.1f calories
-- TDEE: %.1f calories
+	sex := profile.Gender
+	if sex == "male" || sex == "Male" {
+		sex = "Male"
+	} else if sex == "female" || sex == "Female" {
+		sex = "Female"
+	} else {
+		sex = "Other"
+	}
 
-Request Type: %s
-
-`, profile.Age, profile.Gender, profile.Height, profile.Weight, profile.BMI,
-		profile.ActivityLevel, profile.Goal, profile.TargetCalories, profile.BMR, profile.TDEE, requestType)
+	reqBody := PlanRequest{
+		Age:                profile.Age,
+		Sex:                sex,
+		HeightCM:           profile.Height,
+		WeightKG:           profile.Weight,
+		Goal:               profile.Goal,
+		SessionsPerWeek:    3,
+		BudgetKzt:          profile.BudgetKzt,
+		Location:           profile.Location,
+		HealthConditions:   profile.HealthConditions,
+		ExistingActivities: []string{},
+		ActivityLevel:      mapActivityLevel(profile.ActivityLevel),
+	}
 
 	if specificQuestion != "" {
-		prompt += fmt.Sprintf("Specific Question: %s\n\n", specificQuestion)
 	}
 
-	switch requestType {
-	case "workout":
-		prompt += "Provide a detailed workout plan including exercises, sets, reps, and progression. Consider the user's goal and activity level."
-	case "nutrition":
-		prompt += "Provide detailed nutrition advice including meal planning, macro distribution, and food recommendations to support their goal."
-	case "general":
-		prompt += "Provide general fitness and health advice tailored to their profile and goals."
-	default:
-		prompt += "Provide comprehensive fitness and health recommendations."
-	}
-
-	prompt += "\n\nKeep recommendations practical, safe, and achievable. Include specific actionable steps."
-
-	payload := map[string]interface{}{
-		"contents": []map[string]interface{}{
-			{
-				"parts": []map[string]string{
-					{"text": prompt},
-				},
-			},
-		},
-	}
-
-	body, err := json.Marshal(payload)
+	jsonPayload, err := json.Marshal(reqBody)
 	if err != nil {
 		fmt.Println("JSON marshal error:", err)
 		return "", err
 	}
-	fmt.Println("Request payload created, length:", len(body))
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
+	apiURL := "https://meatiest-inkier-miriam.ngrok-free.dev/plan"
+	request, err := http.NewRequest("POST", apiURL, bytes.NewReader(jsonPayload))
 	if err != nil {
 		fmt.Println("HTTP request creation error:", err)
 		return "", err
 	}
-	req.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Accept", "application/json")
 
-	client := &http.Client{}
-	fmt.Println("Sending request to Gemini API...")
-	resp, err := client.Do(req)
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(request)
 	if err != nil {
 		fmt.Println("HTTP request error:", err)
 		return "", err
 	}
 	defer resp.Body.Close()
-	fmt.Println("Response status:", resp.Status)
+	if resp.StatusCode != http.StatusOK {
+		body, _ := ioutil.ReadAll(resp.Body)
+		fmt.Println("API error status:", resp.Status, string(body))
+		return "", fmt.Errorf("REST API error: %s", resp.Status)
+	}
 
-	respBody, err := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("Error reading response body:", err)
 		return "", err
 	}
-	fmt.Println("Response body length:", len(respBody))
-	fmt.Println("Response body:", string(respBody))
 
-	var result struct {
-		Candidates []struct {
-			Content struct {
-				Parts []struct {
-					Text string `json:"text"`
-				} `json:"parts"`
-			} `json:"content"`
-		} `json:"candidates"`
+	type ApiResponse struct {
+		UserSummary struct {
+			Age                int      `json:"age"`
+			Sex                string   `json:"sex"`
+			HeightCM           float64  `json:"height_cm"`
+			WeightKG           float64  `json:"weight_kg"`
+			BMI                float64  `json:"bmi"`
+			SessionsPerWeek    int      `json:"sessions_per_week"`
+			BudgetTier         string   `json:"budget_tier"`
+			HealthConditions   string   `json:"health_conditions"`
+			ExistingActivities []string `json:"existing_activities"`
+			PredictedLabel     string   `json:"predicted_label"`
+		} `json:"user_summary"`
+		TrainingSetting struct {
+			Where, Reason string
+		} `json:"training_setting"`
+		WeeklyWorkouts []struct {
+			DayIndex       int    `json:"day_index"`
+			Focus          string `json:"focus"`
+			SessionMinutes int    `json:"session_minutes"`
+			Exercises      []struct {
+				Name string `json:"name"`
+				Sets string `json:"sets"`
+				Reps string `json:"reps"`
+			} `json:"exercises"`
+		} `json:"weekly_workouts"`
+		Diet struct {
+			EstimatedDailyKcal int `json:"estimated_daily_kcal"`
+			Macros             struct {
+				ProteinG int         `json:"protein_g"`
+				CarbsG   interface{} `json:"carbs_g"`
+				FatG     interface{} `json:"fat_g"`
+			} `json:"macros"`
+			Advice       string `json:"advice"`
+			BudgetAdvice string `json:"budget_advice"`
+		} `json:"diet"`
+		GymRecommendationText *string `json:"gym_recommendation_text"`
+		Notes                 string  `json:"notes"`
 	}
 
-	if err := json.Unmarshal(respBody, &result); err != nil {
+	var apiResp ApiResponse
+	if err := json.Unmarshal(body, &apiResp); err != nil {
 		fmt.Println("JSON unmarshal error:", err)
 		return "", err
 	}
 
-	if len(result.Candidates) == 0 || len(result.Candidates[0].Content.Parts) == 0 {
-		fmt.Println("No candidates in response")
-		return "", fmt.Errorf("No response from Gemini")
+	var result bytes.Buffer
+	result.WriteString("**Personalized Fitness Plan**\n\n")
+	result.WriteString(fmt.Sprintf("**User**: %d y/o %s, %.1fcm, %.1fkg, BMI=%.1f\n\n", apiResp.UserSummary.Age, apiResp.UserSummary.Sex, apiResp.UserSummary.HeightCM, apiResp.UserSummary.WeightKG, apiResp.UserSummary.BMI))
+	result.WriteString(fmt.Sprintf("**Goal:** %s. Sessions/week: %d. Location: %s\n\n", apiResp.UserSummary.PredictedLabel, apiResp.UserSummary.SessionsPerWeek, profile.Location))
+	if apiResp.UserSummary.HealthConditions != "" {
+		result.WriteString(fmt.Sprintf("**Health Conditions:** %s\n\n", apiResp.UserSummary.HealthConditions))
 	}
 
-	fmt.Println("Successfully parsed Gemini response")
-	return result.Candidates[0].Content.Parts[0].Text, nil
+	if apiResp.TrainingSetting.Where != "" {
+		result.WriteString(fmt.Sprintf("**Training Location:** %s\n_Reason: %s_\n\n", apiResp.TrainingSetting.Where, apiResp.TrainingSetting.Reason))
+	}
+
+	if len(apiResp.WeeklyWorkouts) > 0 {
+		result.WriteString("### Weekly Workouts Plan\n")
+		for _, wk := range apiResp.WeeklyWorkouts {
+			result.WriteString(fmt.Sprintf("- **Day %d** (%s, %d min): ", wk.DayIndex+1, wk.Focus, wk.SessionMinutes))
+			for _, ex := range wk.Exercises {
+				result.WriteString(fmt.Sprintf("%s (%s x %s); ", ex.Name, ex.Sets, ex.Reps))
+			}
+			result.WriteString("\n")
+		}
+		result.WriteString("\n")
+	}
+
+	result.WriteString("### Diet Guidance\n")
+	result.WriteString(fmt.Sprintf("- **Calories:** %d kcal/day\n", apiResp.Diet.EstimatedDailyKcal))
+	result.WriteString(fmt.Sprintf("- **Protein:** %dg ", apiResp.Diet.Macros.ProteinG))
+	result.WriteString(fmt.Sprintf("- **Carbs:** %v ", apiResp.Diet.Macros.CarbsG))
+	result.WriteString(fmt.Sprintf("- **Fat:** %v\n", apiResp.Diet.Macros.FatG))
+	result.WriteString(fmt.Sprintf("- %s\n", apiResp.Diet.Advice))
+	if apiResp.Diet.BudgetAdvice != "" {
+		result.WriteString(fmt.Sprintf("- _%s_\n", apiResp.Diet.BudgetAdvice))
+	}
+
+	if apiResp.GymRecommendationText != nil {
+		result.WriteString(fmt.Sprintf("**Gym Advice:** %s\n\n", *apiResp.GymRecommendationText))
+	}
+	if apiResp.Notes != "" {
+		result.WriteString(fmt.Sprintf("**Notes:** %s\n", apiResp.Notes))
+	}
+
+	return result.String(), nil
+}
+
+func mapActivityLevel(level string) int {
+	switch level {
+	case "sedentary":
+		return 1
+	case "light":
+		return 2
+	case "moderate":
+		return 3
+	case "active":
+		return 4
+	case "very_active":
+		return 5
+	default:
+		return 2
+	}
 }
 
 func TestFitnessHandler(w http.ResponseWriter, r *http.Request) {

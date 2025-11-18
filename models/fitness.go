@@ -7,21 +7,25 @@ import (
 
 // FitnessProfile represents user's physical and fitness data
 type FitnessProfile struct {
-	ID             primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	UserID         primitive.ObjectID `json:"user_id" bson:"user_id"`
-	Age            int                `json:"age" bson:"age"`
-	Gender         string             `json:"gender" bson:"gender"`                 // "male", "female", "other"
-	Height         float64            `json:"height" bson:"height"`                 // in cm
-	Weight         float64            `json:"weight" bson:"weight"`                 // in kg
-	ActivityLevel  string             `json:"activity_level" bson:"activity_level"` // "sedentary", "light", "moderate", "active", "very_active"
-	Goal           string             `json:"goal" bson:"goal"`                     // "lose_weight", "gain_weight", "maintain", "build_muscle"
-	TargetWeight   float64            `json:"target_weight,omitempty" bson:"target_weight,omitempty"`
-	TargetCalories int                `json:"target_calories,omitempty" bson:"target_calories,omitempty"`
-	BMI            float64            `json:"bmi" bson:"bmi"`
-	BMR            float64            `json:"bmr" bson:"bmr"`   // Basal Metabolic Rate
-	TDEE           float64            `json:"tdee" bson:"tdee"` // Total Daily Energy Expenditure
-	CreatedAt      time.Time          `json:"created_at" bson:"created_at"`
-	UpdatedAt      time.Time          `json:"updated_at" bson:"updated_at"`
+	ID               primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	UserID           primitive.ObjectID `json:"user_id" bson:"user_id"`
+	Age              int                `json:"age" bson:"age"`
+	Gender           string             `json:"gender" bson:"gender"`                 // "male", "female", "other"
+	Height           float64            `json:"height" bson:"height"`                 // in cm
+	Weight           float64            `json:"weight" bson:"weight"`                 // in kg
+	ActivityLevel    string             `json:"activity_level" bson:"activity_level"` // "sedentary", "light", "moderate", "active", "very_active"
+	Goal             string             `json:"goal" bson:"goal"`                     // "lose_weight", "gain_weight", "maintain", "build_muscle"
+	TargetWeight     float64            `json:"target_weight,omitempty" bson:"target_weight,omitempty"`
+	TargetCalories   int                `json:"target_calories,omitempty" bson:"target_calories,omitempty"`
+	BMI              float64            `json:"bmi" bson:"bmi"`
+	BMR              float64            `json:"bmr" bson:"bmr"`   // Basal Metabolic Rate
+	TDEE             float64            `json:"tdee" bson:"tdee"` // Total Daily Energy Expenditure
+	BudgetKzt        string             `json:"budget_kzt,omitempty" bson:"budget_kzt,omitempty"`
+	Location         string             `json:"location,omitempty" bson:"location,omitempty"`
+	HealthConditions string             `json:"health_conditions,omitempty" bson:"health_conditions,omitempty"`
+	TempC            float64            `json:"temp_c,omitempty" bson:"temp_c,omitempty"`
+	CreatedAt        time.Time          `json:"created_at" bson:"created_at"`
+	UpdatedAt        time.Time          `json:"updated_at" bson:"updated_at"`
 }
 
 // Activity represents a fitness activity entry
