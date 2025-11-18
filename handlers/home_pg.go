@@ -52,7 +52,9 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	err = collection.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&user)
 	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
+		// User not found - clear session and redirect to login
+		sessions.ClearSession(w, r)
+		http.Redirect(w, r, "/login?error=session_expired", http.StatusSeeOther)
 		return
 	}
 

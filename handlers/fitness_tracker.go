@@ -50,7 +50,9 @@ func FitnessTrackerPageHandler(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	err = userCollection.FindOne(context.TODO(), bson.M{"_id": objID}).Decode(&user)
 	if err != nil {
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		// User not found - clear session and redirect to login
+		sessions.ClearSession(w, r)
+		http.Redirect(w, r, "/login?error=session_expired", http.StatusSeeOther)
 		return
 	}
 
@@ -393,6 +395,7 @@ func GetAIFitnessRecommendations(profile models.FitnessProfile, requestType, spe
 		} `json:"diet"`
 		GymRecommendationText *string `json:"gym_recommendation_text"`
 		Notes                 string  `json:"notes"`
+		WeatherAdvice         string  `json:"weather_advice"`
 	}
 
 	var apiResp ApiResponse
@@ -440,6 +443,15 @@ func GetAIFitnessRecommendations(profile models.FitnessProfile, requestType, spe
 	}
 	if apiResp.Notes != "" {
 		result.WriteString(fmt.Sprintf("**Notes:** %s\n", apiResp.Notes))
+	}
+
+	weatherMsg, err := getAstanaWeatherMessage()
+	if err == nil && weatherMsg != "" {
+		result.WriteString(fmt.Sprintf("\n**Weather in Astana:** %s\n", weatherMsg))
+	}
+
+	if apiResp.WeatherAdvice != "" {
+		result.WriteString(fmt.Sprintf("\n**Weather Advice:** %s\n", apiResp.WeatherAdvice))
 	}
 
 	if profile.Location != "" {
@@ -496,7 +508,7 @@ func GetAIFitnessRecommendations(profile models.FitnessProfile, requestType, spe
 			appendParkWithMap(&result,
 				"Korgalzhyn Park",
 				"https://maps.app.goo.gl/DEomXwXn27bNJ5bNA",
-				`<<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d56590.97603169474!2d71.30637580720908!3d51.18238084809854!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4245879cbfbe3f17%3A0x25861b90d4b416da!2z0KHQutCy0LXRgCAi0JrQvtGA0LPQsNC70LbRi9C9Ig!5e0!3m2!1sru!2skz!4v1763486356881!5m2!1sru!2skz" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`)
+				`<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d56590.97603169474!2d71.30637580720908!3d51.18238084809854!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4245879cbfbe3f17%3A0x25861b90d4b416da!2z0KHQutCy0LXRgCAi0JrQvtGA0LPQsNC70LbRi9C9Ig!5e0!3m2!1sru!2skz!4v1763486356881!5m2!1sru!2skz" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`)
 			appendParkWithMap(&result,
 				"Koktal Park",
 				"https://maps.app.goo.gl/BzXxPNA8HnQBZpWf7",
@@ -523,6 +535,99 @@ func appendParkWithMap(buf *bytes.Buffer, name, link, iframeHTML string) {
 		buf.WriteString(iframeHTML)
 		buf.WriteString("\n\n")
 	}
+}
+
+type WeatherResponse struct {
+	Main struct {
+		Temp      float64 `json:"temp"`
+		FeelsLike float64 `json:"feels_like"`
+		Humidity  int     `json:"humidity"`
+	} `json:"main"`
+	Weather []struct {
+		Main        string `json:"main"`
+		Description string `json:"description"`
+	} `json:"weather"`
+	Wind struct {
+		Speed float64 `json:"speed"`
+	} `json:"wind"`
+	Rain struct {
+		OneHour float64 `json:"1h"`
+	} `json:"rain,omitempty"`
+}
+
+func getAstanaWeatherMessage() (string, error) {
+	apiKey := "e07c1dae22075230a36cf1534b6284e0"
+	url := fmt.Sprintf("https://api.openweathermap.org/data/2.5/weather?lat=51.1694&lon=71.4491&appid=%s&units=metric", apiKey)
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Get(url)
+	if err != nil {
+		fmt.Println("Weather API request error:", err)
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := ioutil.ReadAll(resp.Body)
+		fmt.Println("Weather API error status:", resp.Status, string(body))
+		if resp.StatusCode == http.StatusUnauthorized {
+			fmt.Println("Warning: Invalid OpenWeather API key. Weather information will be skipped.")
+			return "", fmt.Errorf("invalid API key")
+		}
+		return "", fmt.Errorf("weather API error: %s", resp.Status)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading weather response:", err)
+		return "", err
+	}
+
+	var weather WeatherResponse
+	if err := json.Unmarshal(body, &weather); err != nil {
+		fmt.Println("Error parsing weather JSON:", err)
+		return "", err
+	}
+
+	isGoodDay := isGoodWeatherDay(weather)
+
+	weatherDesc := ""
+	if len(weather.Weather) > 0 {
+		weatherDesc = weather.Weather[0].Description
+	}
+
+	if isGoodDay {
+		return fmt.Sprintf("☀️ Great day for outdoor activities! Current weather: %.1f°C, %s. Perfect conditions for your fitness routine!",
+			weather.Main.Temp, weatherDesc), nil
+	} else {
+		return fmt.Sprintf("⚠️ Not ideal for outdoor activities today. Current weather: %.1f°C, %s. Consider indoor workouts or wait for better conditions.",
+			weather.Main.Temp, weatherDesc), nil
+	}
+}
+
+func isGoodWeatherDay(weather WeatherResponse) bool {
+	temp := weather.Main.Temp
+	if temp < -10 || temp > 35 {
+		return false
+	}
+
+	if weather.Rain.OneHour > 0.5 {
+		return false
+	}
+
+	if len(weather.Weather) > 0 {
+		mainCondition := weather.Weather[0].Main
+		if mainCondition == "Rain" || mainCondition == "Thunderstorm" ||
+			mainCondition == "Snow" || mainCondition == "Extreme" {
+			return false
+		}
+	}
+
+	if weather.Wind.Speed > 15 {
+		return false
+	}
+
+	return true
 }
 
 func mapActivityLevel(level string) int {
