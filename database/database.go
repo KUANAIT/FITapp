@@ -14,7 +14,7 @@ var DB *mongo.Collection
 var UserCollection *mongo.Collection
 
 func Connect_DB() {
-	clientOptions := options.Client().ApplyURI("mongodb+srv://OSTi:eQQyp4P3elNkQf9r@cluster0.0rfodzy.mongodb.net/")
+	clientOptions := options.Client().ApplyURI("mongodb+srv://OSTi:eQQyp4P3elNkQf9r@cluster0.0rfodzy.mongodb.net/fitness?retryWrites=true&w=majority&appName=Cluster0")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 

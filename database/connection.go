@@ -16,7 +16,7 @@ var client *mongo.Client
 func ConnectDB() error {
 	uri := os.Getenv("MONGODB_URI")
 	if uri == "" {
-		uri = "mongodb+srv://OSTi:eQQyp4P3elNkQf9r@cluster0.0rfodzy.mongodb.net/"
+		uri = "mongodb+srv://OSTi:eQQyp4P3elNkQf9r@cluster0.0rfodzy.mongodb.net/fitness?retryWrites=true&w=majority&appName=Cluster0"
 	}
 
 	clientOptions := options.Client().ApplyURI(uri)
