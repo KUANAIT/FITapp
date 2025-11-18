@@ -444,33 +444,85 @@ func GetAIFitnessRecommendations(profile models.FitnessProfile, requestType, spe
 
 	if profile.Location != "" {
 		result.WriteString("\n#### Recommended Fitness Spots in ")
-		result.WriteString(profile.Location + " " + "district")
+		result.WriteString(profile.Location + " district")
 		result.WriteString("\n")
+
 		switch profile.Location {
 		case "Almaty":
-			result.WriteString("- [Zheruiyk Park](https://maps.app.goo.gl/u7jXA2QsDuYJZ8159)\n")
-			result.WriteString("- [Park named after B. Momyshuly](https://maps.app.goo.gl/7ywzBg8QMSm5gLm28)\n")
-			result.WriteString("- [Triathlon Park](https://maps.app.goo.gl/qaiKPwsi9pDLk8Du8)\n")
+			appendParkWithMap(&result,
+				"Zheruiyk Park",
+				"https://maps.app.goo.gl/u7jXA2QsDuYJZ8159",
+				`<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d20026.501284176888!2d71.48262!3d51.1395852!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x42458164bd64bdd7%3A0xb6455d1f92027b0c!2z0J_QsNGA0LogwqvQltC10YDSsdC50YvSm8K7!5e0!3m2!1sru!2skz!4v1763485095800!5m2!1sru!2skz" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`)
+			appendParkWithMap(&result,
+				"Park named after B. Momyshuly",
+				"https://maps.app.goo.gl/7ywzBg8QMSm5gLm28",
+				`<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d80118.66676408233!2d71.3551787!3d51.1322877!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x424583fe49ec2f05%3A0xbfdaf9e955678c0e!2z0L_QsNGA0Log0LjQvC4g0JHQsNGD0YvRgNC20LDQvdCwINCc0L7QvNGL0YjSsdC70Ys!5e0!3m2!1sru!2skz!4v1763485377075!5m2!1sru!2skz" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`)
+			appendParkWithMap(&result,
+				"Triathlon Park",
+				"https://maps.app.goo.gl/qaiKPwsi9pDLk8Du8",
+				`<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d20029.973216144732!2d71.4444481!3d51.131581!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4245870067b1517d%3A0x6a00eb76b363a4e5!2sTriathlon%20Park!5e0!3m2!1sru!2skz!4v1763485430182!5m2!1sru!2skz" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`)
 		case "Baikonur":
-			result.WriteString("- [Atyrau Bridge / Embankment Area](https://maps.app.goo.gl/Bm6S1RuvuWsUHWzm9)\n")
+			appendParkWithMap(&result,
+				"Atyrau Bridge / Embankment Area",
+				"https://maps.app.goo.gl/Bm6S1RuvuWsUHWzm9",
+				`<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d40045.51154599432!2d71.4119242!3d51.1482191!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x424587987fa8fedd%3A0x555f7a5fccb9e949!2z0JDRgtGL0YDQsNGDINCa06nQv9GW0YDRlg!5e0!3m2!1sru!2skz!4v1763485689999!5m2!1sru!2skz" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`)
 		case "Esil":
-			result.WriteString("- [Botanical Garden](https://maps.app.goo.gl/S9giRJKWfHVLJxaz9)\n")
-			result.WriteString("- [Expo Park](https://maps.app.goo.gl/YWq5SCAEQtivUvf19)\n")
-			result.WriteString("- [Linear Park](https://maps.app.goo.gl/vuSPejUBT8E4yiJr7)\n")
-			result.WriteString("- [Lovers' Park](https://maps.app.goo.gl/KDKH5vH6nDuA5hPr7)\n")
+			appendParkWithMap(&result,
+				"Botanical Garden",
+				"https://maps.app.goo.gl/brmo6SAZyDAphAne7",
+				`<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d40081.73841599552!2d71.33993334863281!3d51.10645550000002!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x42458435e1300fc1%3A0xfd44a581cbd7eb4e!2z0JHQvtGC0LDQvdC40YfQtdGB0LrQuNC5INGB0LDQtA!5e0!3m2!1sru!2skz!4v1763485772326!5m2!1sru!2skz" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`)
+			appendParkWithMap(&result,
+				"Expo Park",
+				"https://maps.app.goo.gl/YWq5SCAEQtivUvf19",
+				`<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2506.0302686086943!2d71.4128179!3d51.0894489!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4245857b9fa89d21%3A0xc4c832ddd885b44d!2z0J_QsNGA0LogRXhwbyAyMDE3!5e0!3m2!1sru!2skz!4v1763485823987!5m2!1sru!2skz" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`)
+			appendParkWithMap(&result,
+				"Linear Park",
+				"https://maps.app.goo.gl/vuSPejUBT8E4yiJr7",
+				`<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d80195.53565010101!2d71.3947841!3d51.0879684!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x424585d08682705b%3A0x32db93640e0d489b!2z0JvQuNC90LXQudC90YvQuSDQv9Cw0YDQuiDQkNGB0YLQsNC90LA!5e0!3m2!1sru!2skz!4v1763485851784!5m2!1sru!2skz" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`)
+			appendParkWithMap(&result,
+				"Lovers' Park",
+				"https://maps.app.goo.gl/KDKH5vH6nDuA5hPr7",
+				`<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d80116.97619318932!2d71.2721729!3d51.1332621!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4245869c77fa4883%3A0x6aaf637c7b90145b!2z0pLQsNGI0YvSm9GC0LDRgCDRgdCw0Y_QsdCw0pPRiw!5e0!3m2!1sru!2skz!4v1763485960762!5m2!1sru!2skz" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`)
 		case "Nura":
-			result.WriteString("- [Turan Ave.](https://maps.app.goo.gl/1z8fPZaw2i4sVvmf6)\n")
-			result.WriteString("- [Central Park](https://maps.app.goo.gl/x1GR7mPatBcNvpLA9)\n")
+			appendParkWithMap(&result,
+				"Turan Ave.",
+				"https://maps.app.goo.gl/1z8fPZaw2i4sVvmf6",
+				`<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d20043.2937688575!2d71.3914396!3d51.1008634!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x42458695c93afaaf%3A0xef0ec94aac7cadb3!2z0L_RgNC-0YHQvy4g0KLRg9GA0LDQvSwgMDIwMDAwINCQ0YHRgtCw0L3QsA!5e0!3m2!1sru!2skz!4v1763485999172!5m2!1sru!2skz" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`)
+			appendParkWithMap(&result,
+				"Central Park",
+				"https://maps.app.goo.gl/x1GR7mPatBcNvpLA9",
+				`<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d40065.99948832376!2d71.3808382!3d51.1246029!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x424586c58884bee3%3A0x3c695a5bf1c2492b!2z0KbQtdC90YLRgNCw0LvRjNC90YvQuSDQn9Cw0YDQug!5e0!3m2!1sru!2skz!4v1763486015368!5m2!1sru!2skz" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`)
 		case "Saryarka":
-			result.WriteString("- [Korgalzhyn Park](https://go.2gis.com/VpJFc)\n")
-			result.WriteString("- [Koktal Park](https://maps.app.goo.gl/BzXxPNA8HnQBZpWf7)\n")
+			appendParkWithMap(&result,
+				"Korgalzhyn Park",
+				"https://maps.app.goo.gl/DEomXwXn27bNJ5bNA",
+				`<<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d56590.97603169474!2d71.30637580720908!3d51.18238084809854!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4245879cbfbe3f17%3A0x25861b90d4b416da!2z0KHQutCy0LXRgCAi0JrQvtGA0LPQsNC70LbRi9C9Ig!5e0!3m2!1sru!2skz!4v1763486356881!5m2!1sru!2skz" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`)
+			appendParkWithMap(&result,
+				"Koktal Park",
+				"https://maps.app.goo.gl/BzXxPNA8HnQBZpWf7",
+				`<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d20010.411010311265!2d71.3518228!3d51.176668!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x424587a617c49225%3A0xca32e5f49d063e98!2z0JrQvtC60YLQsNC7!5e0!3m2!1sru!2skz!4v1763486107213!5m2!1sru!2skz" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`)
 		case "Sarayshyq":
-			result.WriteString("- [President's Park](https://maps.app.goo.gl/BT2u9wQwyskF28T7A)\n")
+			appendParkWithMap(&result,
+				"President's Park",
+				"https://maps.app.goo.gl/BT2u9wQwyskF28T7A",
+				`<iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d80143.17587666509!2d71.390861!3d51.1181598!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4245840f6e6b75a7%3A0x9a8f0fe5c39da89c!2z0J_RgNC10LfQuNC00LXQvdGC0YHQutC40Lkg0L_QsNGA0Lo!5e0!3m2!1sru!2skz!4v1763486139314!5m2!1sru!2skz" width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`)
 		default:
 			result.WriteString("Stay At Home\n")
 		}
 	}
 	return result.String(), nil
+}
+
+func appendParkWithMap(buf *bytes.Buffer, name, link, iframeHTML string) {
+	buf.WriteString("- [")
+	buf.WriteString(name)
+	buf.WriteString("](")
+	buf.WriteString(link)
+	buf.WriteString(")\n")
+	if iframeHTML != "" {
+		buf.WriteString(iframeHTML)
+		buf.WriteString("\n\n")
+	}
 }
 
 func mapActivityLevel(level string) int {
