@@ -646,25 +646,3 @@ func mapActivityLevel(level string) int {
 		return 2
 	}
 }
-
-func TestFitnessHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles("templates/test_fitness.html")
-	if err != nil {
-		http.Error(w, "Template error: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	data := struct {
-		UserName   string
-		HasProfile bool
-	}{
-		UserName:   "Test User",
-		HasProfile: false,
-	}
-
-	err = tmpl.Execute(w, data)
-	if err != nil {
-		http.Error(w, "Template execution error: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-}

@@ -24,13 +24,9 @@ func RegisterRoutes() {
 	http.HandleFunc("/fitness-chat", handlers.FitnessChatPageHandler)
 	http.HandleFunc("/ask-fitness", handlers.AskFitnessHandler)
 
-	// Fitness Tracker routes
 	http.HandleFunc("/fitness-tracker", middleware.AuthRequired(handlers.FitnessTrackerPageHandler))
 	http.HandleFunc("/fitness/profile", middleware.AuthRequired(handlers.CreateFitnessProfileHandler))
 	http.HandleFunc("/fitness/activity", middleware.AuthRequired(handlers.AddActivityHandler))
 	http.HandleFunc("/fitness/recommendations", middleware.AuthRequired(handlers.GetFitnessRecommendationsHandler))
-
-	// Test route
-	http.HandleFunc("/test-fitness", handlers.TestFitnessHandler)
 
 }
