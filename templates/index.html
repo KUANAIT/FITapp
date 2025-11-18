@@ -7,28 +7,52 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <style>
+        :root {
+            --main-bg: #f8ffae;
+            --main-bg-gradient: linear-gradient(135deg, #f8ffae 0%, #43cea2 100%);
+            --card-bg: #fff;
+            --header-gradient: linear-gradient(90deg, #43cea2 0%, #185a9d 100%);
+            --text: #222;
+            --footer-bg: #222;
+            --footer-text: #fff;
+        }
+        body.light-theme {
+            --main-bg: #f8ffae;
+            --main-bg-gradient: linear-gradient(135deg, #f8ffae 0%, #43cea2 100%);
+            --card-bg: #fff;
+            --header-gradient: linear-gradient(90deg, #43cea2 0%, #185a9d 100%);
+            --text: #222;
+            --footer-bg: #222;
+            --footer-text: #fff;
+        }
+        body.dark-theme {
+            --main-bg: #232829;
+            --main-bg-gradient: linear-gradient(135deg, #232829 0%, #485563 100%);
+            --card-bg: #262b40;
+            --header-gradient: linear-gradient(90deg, #232829 0%, #202342 100%);
+            --text: #f3f3f3;
+            --footer-bg: #121212;
+            --footer-text: #aaa;
+        }
         html, body {
             height: 100%;
             margin: 0;
+            background: var(--main-bg-gradient) !important;
+            color: var(--text) !important;
         }
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #f8ffae 0%, #43cea2 100%);
-            display: flex;
-            flex-direction: column;
-        }
-        main {
-            flex: 1;
+        body, .container, .card, .welcome-card {
+            background: var(--main-bg-gradient) !important;
+            color: var(--text) !important;
         }
         .welcome-card {
+            background: var(--card-bg) !important;
             border-radius: 1.5rem;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
             backdrop-filter: blur(2px);
             border: 1px solid rgba(255,255,255,0.18);
-            background: #fff;
         }
         .welcome-header {
-            background: linear-gradient(90deg, #43cea2 0%, #185a9d 100%);
+            background: var(--header-gradient) !important;
             border-radius: 1.5rem 1.5rem 0 0;
             box-shadow: 0 4px 16px 0 rgba(25,135,84,0.10);
         }
@@ -60,6 +84,9 @@
             box-shadow: 0 4px 16px 0 rgba(31, 38, 135, 0.15);
             border: 1px solid rgba(255,255,255,0.3);
         }
+        .floating-nav, .card-footer, .modal-content {
+            background: var(--card-bg) !important;
+        }
         .btn-outline-success {
             border-radius: 2rem;
         }
@@ -67,7 +94,11 @@
 </head>
 <body>
 {{if .Authenticated}}
-<div class="floating-nav p-3">
+<div class="floating-nav p-3 d-flex gap-2 align-items-center">
+    <!-- Тогглер темы -->
+    <button id="theme-toggle" class="btn btn-outline-secondary" title="Toggle theme">
+        <i id="theme-toggle-icon" class="bi bi-moon"></i>
+    </button>
     <div class="dropdown">
         <button class="btn btn-success dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="bi bi-person-circle"></i> {{.UserName}}
@@ -121,5 +152,28 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script>
+(function() {
+    const toggle = document.getElementById('theme-toggle');
+    const icon = document.getElementById('theme-toggle-icon');
+    function setTheme(theme) {
+        document.body.classList.remove('light-theme', 'dark-theme');
+        document.body.classList.add(theme+'-theme');
+        localStorage.setItem('theme', theme);
+        icon.className = (theme === 'dark' ? 'bi bi-sun' : 'bi bi-moon');
+    }
+    // Init
+    const saved = localStorage.getItem('theme');
+    if (saved) setTheme(saved);
+    else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setTheme(prefersDark ? 'dark' : 'light');
+    }
+    toggle.addEventListener('click', function() {
+        const now = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
+        setTheme(now);
+    });
+})();
+</script>
 </body>
 </html>
